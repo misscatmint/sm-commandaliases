@@ -1,52 +1,101 @@
-/*
-	Things to keep in mind:
-	- "sm_" prefix gets adjusted to your chat trigger(s), i.e. '!' and '/'.
-	- The below example configuration file sets the following:
-		- "sm_admin" to an alias called "sm_a" (!a, /a by default)
-		- "sm_help" to an alias called "sm_h" (!h, /h by default)
-	- Configure your aliases to "cfg/sourcemod/CommandAliases.cfg".
+#include <sourcemod>
 
-	"CommandAliases"
-	{
-    	"sm_a" "sm_admin"
-    	"sm_h" "sm_help"
-	}
-*/
+#pragma semicolon 1
+#pragma newdecls required
+
+#define DEFAULT_CONFIG "cfg/sourcemod/CommandAliases.cfg"
+
+enum struct AliasDescriptor
+{
+	char Command[128];
+	char Destination[256];
+
+	char ChatMessage[128];
+}
+
+enum AliasValidationError
+{
+	ValidationError_None = 0,
+	ValidationError_AliasEmpty,
+	ValidationError_AliasWhitespace,
+	ValidationError_DestinationEmpty,
+	ValidationError_AliasDuplicateKey,
+	ValidationError_COUNT
+};
+
+static char ValidationPhrases[ValidationError_COUNT][] =
+{
+	"None",
+	"Alias commands cannot be empty",
+	"Alias commands cannot contain whitespace",
+	"Destination command cannot be empty",
+	"Alias commands cannot be duplicate"
+};
 
 StringMap g_Aliases = null;
 
-#define DefaultConfigPath "cfg/sourcemod/CommandAliases.cfg"
+public Plugin myinfo =
+{
+	name = "CommandAliases",
+	author = "Sikari",
+	description = "",
+	version = "1.0.0",
+	url = "https://bitbucket.org/Sikarii/sm-commandaliases"
+};
+
+// ===== [ PUBLIC ] =====
 
 public void OnPluginStart()
 {
-	g_Aliases = LoadAliasesFromKeyValuesFile(DefaultConfigPath);
-	if (g_Aliases == null)
-	{
-		LogError("Failed loading command aliases from \"%s\"", DefaultConfigPath);
-	}
-	else
-	{
-		LogMessage("Loaded %d command aliases from \"%s\"", g_Aliases.Size, DefaultConfigPath);
-	}
+	g_Aliases = new StringMap();
 
 	RegAdminCmd("sm_commandaliases_list", Command_ListAliases, ADMFLAG_RCON, "Lists command aliases");
 	RegAdminCmd("sm_commandaliases_reload", Command_ReloadAliases, ADMFLAG_RCON, "Reloads command aliases");
 }
 
-/*
-	Helper to load aliases and their destination commands
-	from KeyValues structure, needs "CommandAliases" root section.
-
-	Both the alias and destination commands are casted to lowercase.
-	This does NOT validate for (infinite) command recursion!
-*/
-StringMap LoadAliasesFromKeyValuesFile(char filePath[PLATFORM_MAX_PATH])
+public void OnAllPluginsLoaded()
 {
-	if (!FileExists(filePath))
+	ArrayList aliases = ParseAliasesFromKeyValuesFile(DEFAULT_CONFIG);
+	if (aliases == null)
 	{
-		return null;
+		LogError("Failure parsing command aliases from \"%s\"", DEFAULT_CONFIG);
+		return;
 	}
 
+	ArrayList errors = new ArrayList();
+	ArrayList validAliases = GetValidAliases(aliases, errors);
+
+	if (aliases.Length != validAliases.Length)
+	{
+		for (int i = 0; i < aliases.Length; i++)
+		{
+			AliasValidationError error = errors.Get(i);
+			if (error != ValidationError_None)
+			{
+				AliasDescriptor alias;
+				aliases.GetArray(i, alias);
+
+				LogError("Validation of alias \"%s\" failed, reason: \"%s\"", alias.Command, ValidationPhrases[error]);
+			}
+		}
+	}
+
+	int hookCount = RegisterAndHookAliases(validAliases, g_Aliases, true);
+
+	LogMessage("%d command aliases loaded, \
+				of which %d are valid, \
+				%d new command hooks were used to accomplish full coverage.",
+				aliases.Length,
+				validAliases.Length,
+				hookCount);
+
+	delete errors;
+	delete aliases;
+	delete validAliases;
+}
+
+ArrayList ParseAliasesFromKeyValuesFile(char filePath[PLATFORM_MAX_PATH])
+{
 	KeyValues kv = new KeyValues("CommandAliases");
 	if (kv == null || !kv.ImportFromFile(filePath))
 	{
@@ -54,138 +103,318 @@ StringMap LoadAliasesFromKeyValuesFile(char filePath[PLATFORM_MAX_PATH])
 		return null;
 	}
 
-	StringMap aliases = new StringMap();
+	ArrayList aliases = new ArrayList(sizeof(AliasDescriptor));
 
-	while (kv.GotoFirstSubKey(false) || kv.GotoNextKey(false))
+	while (kv.GotoNextKey(false) || (kv.GotoFirstSubKey(false) && kv.NodesInStack() <= 1))
 	{
-		char alias[256];
-		kv.GetSectionName(alias, sizeof(alias));
+		AliasDescriptor alias;
+		kv.GetSectionName(alias.Command, sizeof(alias.Command));
 
-		char destCmd[256];
-		kv.GetString(NULL_STRING, destCmd, sizeof(destCmd));
-		
-		TrimString(alias);
-		TrimString(destCmd);
-
-		StringToLower(alias);
-		StringToLower(destCmd);
-
-		// TODO: Alias / DestCmd should probably be validated
-		// i.e. an empty string ("") as an alias is probably not valid.
-
-		// Already existing key (alias)
-		if (!aliases.SetString(alias, destCmd, false))
+		bool isSimpleDefinition = (kv.GetDataType(NULL_STRING) == KvData_String);
+		if (isSimpleDefinition)
 		{
-			LogError("Duplicate alias \"%s\" (->\"%s\")", alias, destCmd);
-			continue;
+			/*
+				Simple definition:
+				"sm_myalias"	"sm_help"
+			*/
+			kv.GetString(NULL_STRING, alias.Destination, sizeof(alias.Destination));
+		}
+		else
+		{
+			/*
+				Detailed definition:
+				"sm_myalias"
+				{
+					"destination"	"sm_help"
+					"chatmessage"	"Hello World"
+				}
+			*/
+			kv.GetString("destination", alias.Destination, sizeof(alias.Destination));
+			kv.GetString("chatmessage", alias.ChatMessage, sizeof(alias.ChatMessage));
 		}
 
-		// Constants cannot be used for sizeof()
-		char desc[sizeof(destCmd) + 14];
-		Format(desc, sizeof(desc), "Alias to \"%s\"", destCmd);
-
-		// TODO: Should we care if the command exists already?
-		RegConsoleCmd(alias, Command_Alias, desc);
+		aliases.PushArray(alias);
 	}
 
-	delete kv;
 	return aliases;
 }
 
-void StringToLower(char[] input)
+ArrayList GetValidAliases(ArrayList candicates, ArrayList validationResults = null)
 {
-	int maxlen = strlen(input);
-	for (int i = 0; i <= maxlen; i++)
+	ArrayList validAliases = new ArrayList(sizeof(AliasDescriptor));
+	if (candicates == null || candicates.Length <= 0)
 	{
-		input[i] = CharToLower(input[i]);
+		return validAliases;
 	}
+
+	for (int i = 0; i < candicates.Length; i++)
+	{
+		AliasDescriptor candicate;
+		candicates.GetArray(i, candicate);
+
+		AliasValidationError error = ValidateAlias(candicate, validAliases);
+
+		if (validationResults != null)
+		{
+			validationResults.Push(error);
+		}
+
+		if (error == ValidationError_None)
+		{
+			validAliases.PushArray(candicate);
+		}
+	}
+
+	return validAliases;
 }
 
-public Action Command_Alias(int client, int args)
+int RegisterAndHookAliases(ArrayList aliases, StringMap destination, bool clearDestination = true)
 {
-	if (g_Aliases == null)
+	if (aliases == null || aliases.Length <= 0)
 	{
-		return Plugin_Continue;
+		return 0;
 	}
 
-	// We shouldnt care if console (0) is not connected..?
-	if (client > 0 && !IsClientConnected(client))
+	if (clearDestination)
 	{
-		return Plugin_Continue;
+		destination.Clear();
 	}
 
-	char command[256];
-	GetCmdArg(0, command, sizeof(command));
-
-	char destCmd[256];
-	if (!g_Aliases.GetString(command, destCmd, sizeof(destCmd)))
+	static StringMap MyHooks;
+	if (MyHooks == null)
 	{
-		// Let this pass if its not one of our aliases
-		return Plugin_Continue;
+		MyHooks = new StringMap();
 	}
 
-	FakeClientCommand(client, "%s", destCmd);
-	return Plugin_Handled;
+	int hookCount = 0;
+
+	for (int i = 0; i < aliases.Length; i++)
+	{
+		AliasDescriptor alias;
+		aliases.GetArray(i, alias);
+
+		bool shouldHook = false;
+
+		if (!CommandExists(alias.Command))
+		{
+			shouldHook = true;
+		}
+		else
+		{
+			any dummy;
+			if (!MyHooks.GetValue(alias.Command, dummy))
+			{
+				shouldHook = true;
+				LogMessage("Warning: Alias command \"%s\" was already registered as a command!", alias.Command);
+			}
+		}
+
+		if (shouldHook)
+		{
+			hookCount++;
+			MyHooks.SetValue(alias.Command, 0);
+			RegConsoleCmd(alias.Command, Command_Alias, "Alias command");
+		}
+
+		destination.SetArray(alias.Command, alias, sizeof(alias));
+	}
+
+	return hookCount;
 }
 
-public Action Command_ReloadAliases(int client, int args)
+AliasValidationError ValidateAlias(AliasDescriptor alias, ArrayList existingAliases)
 {
-	char configPath[PLATFORM_MAX_PATH] = DefaultConfigPath;
+	TrimString(alias.Command);
+	TrimString(alias.Destination);
 
-	// Allow (re)loading of non standard path(s)
-	if (args >= 1)
+	StringToLower(alias.Command);
+
+	// Empty aliases are not valid
+	if (alias.Command[0] == '\0')
 	{
-		GetCmdArgString(configPath, sizeof(configPath));
+		return ValidationError_AliasEmpty;
 	}
 
-	StringMap aliases = LoadAliasesFromKeyValuesFile(configPath);
-	if (aliases == null)
+	// Aliases with whitespace are not valid
+	if (StrContains(alias.Command, " ") != -1)
 	{
-		ReplyToCommand(client, "Failed loading command aliases from \"%s\"", configPath);
-		return Plugin_Handled;
+		return ValidationError_AliasWhitespace;
 	}
 
-	if (g_Aliases != null)
+	// Empty destinations are not valid
+	if (alias.Destination[0] == '\0')
 	{
-		g_Aliases.Clear();
-		delete g_Aliases;
+		return ValidationError_DestinationEmpty;
 	}
 
-	g_Aliases = aliases;
-	ReplyToCommand(client, "Loaded %d command aliases from \"%s\"", aliases.Size, configPath);
+	// Duplicate aliases are not valid
+	for (int i = 0; i < existingAliases.Length; i++)
+	{
+		AliasDescriptor existingAlias;
+		existingAliases.GetArray(i, existingAlias);
 
-	return Plugin_Handled;
+		if (StrEqual(existingAlias.Command, alias.Command))
+		{
+			return ValidationError_AliasDuplicateKey;
+		}
+	}
+
+	return ValidationError_None;
 }
+
+bool PerformAlias(int client, int args, AliasDescriptor alias)
+{
+	// TODO: Can we validate if we're in a command hook context?
+
+	if (alias.Command[0] == '\0')
+	{
+		return false;
+	}
+
+	if (alias.Destination[0] == '\0')
+	{
+		return false;
+	}
+
+	int argsIdx = StrContains(alias.Destination, " ");
+	if (argsIdx != -1)
+	{
+		if (StrContains(alias.Destination[argsIdx], "{{args}}") != -1)
+		{
+			char argString[128];
+			if (args > 0)
+			{
+				GetCmdArgString(argString, sizeof(argString));
+			}
+
+			ReplaceString(alias.Destination[argsIdx], sizeof(alias.Destination), "{{args}}", argString);
+		}
+	}
+
+	TrimString(alias.Destination);
+
+	if (client == 0)
+	{
+		ServerCommand("%s", alias.Destination);
+	}
+	else
+	{
+		FakeClientCommandEx(client, "%s", alias.Destination);
+	}
+
+	if (alias.ChatMessage[0] != '\0')
+	{
+		ReplyToCommand(client, "%s", alias.ChatMessage);
+	}
+
+	return true;
+}
+
+// ===== [ COMMANDS ] =====
 
 public Action Command_ListAliases(int client, int args)
 {
-	if (g_Aliases == null || g_Aliases.Size <= 0)
+	if (g_Aliases.Size <= 0)
 	{
 		ReplyToCommand(client, "No aliases were found!");
 		return Plugin_Handled;
 	}
 
-	StringMapSnapshot snap = g_Aliases.Snapshot();
-	if (snap == null)
+	ArrayList aliases = StringMapKeysToList(g_Aliases, sizeof(AliasDescriptor::Command));
+
+	aliases.Sort(Sort_Ascending, Sort_String);
+
+	for (int i = 0; i < aliases.Length; i++)
 	{
-		// Can this even happen? Out of memory?
-		ReplyToCommand(client, "Something unexpected happened while trying to list aliases, try again later!");
+		char command[sizeof(AliasDescriptor::Command)];
+		aliases.GetString(i, command, sizeof(command));
+
+		AliasDescriptor alias;
+		g_Aliases.GetArray(command, alias, sizeof(alias));
+
+		ReplyToCommand(client, " \"%s\" => \"%s\"", alias.Command, alias.Destination);
+	}
+
+	delete aliases;
+	return Plugin_Handled;
+}
+
+public Action Command_ReloadAliases(int client, int args)
+{
+	ArrayList aliases = ParseAliasesFromKeyValuesFile(DEFAULT_CONFIG);
+	if (aliases == null)
+	{
+		ReplyToCommand(client, "Failure parsing command aliases from \"%s\"", DEFAULT_CONFIG);
 		return Plugin_Handled;
 	}
 
-	ReplyToCommand(client, "Command Aliases:");
+	ArrayList validAliases = GetValidAliases(aliases);
 
-	for (int i = 0; i < snap.Length; i++)
+	int hookCount = RegisterAndHookAliases(validAliases, g_Aliases, true);
+
+	ReplyToCommand(client, "%d command aliases loaded, \
+							of which %d are valid, \
+							%d new command hooks were used to accomplish full coverage.",
+							aliases.Length,
+							validAliases.Length,
+							hookCount);
+
+	delete aliases;
+	delete validAliases;
+	return Plugin_Handled;
+}
+
+// ===== [ LISTENER ] =====
+
+public Action Command_Alias(int client, int args)
+{
+	char commandName[sizeof(AliasDescriptor::Command)];
+	GetCmdArg(0, commandName, sizeof(commandName));
+
+	StringToLower(commandName);
+
+	/*
+		Command hooks cannot be unregistered,
+		so we need to ask our collection if it's still active.
+	*/
+	AliasDescriptor alias;
+	if (!g_Aliases.GetArray(commandName, alias, sizeof(alias)))
 	{
-		char alias[256];
-		snap.GetKey(i, alias, sizeof(alias));
-
-		char destCmd[256];
-		g_Aliases.GetString(alias, destCmd, sizeof(destCmd));
-
-		ReplyToCommand(client, "\t[%s] => %s", alias, destCmd);
+		return Plugin_Continue;
 	}
 
-	delete snap;
+	if (!PerformAlias(client, args, alias))
+	{
+		return Plugin_Continue;
+	}
+
 	return Plugin_Handled;
+}
+
+// ===== [ HELPERS ] =====
+
+void StringToLower(char[] input)
+{
+	int inputLen = strlen(input);
+	for (int i = 0; i <= inputLen; i++)
+	{
+		input[i] = CharToLower(input[i]);
+	}
+}
+
+ArrayList StringMapKeysToList(StringMap map, int maxKeyBytes)
+{
+	ArrayList list = new ArrayList(ByteCountToCells(maxKeyBytes));
+
+	StringMapSnapshot keys = map.Snapshot();
+	for (int i = 0; i < keys.Length; i++)
+	{
+		char[] key = new char[maxKeyBytes];
+		keys.GetKey(i, key, maxKeyBytes);
+
+		list.PushString(key);
+	}
+
+	delete keys;
+	return list;
 }
