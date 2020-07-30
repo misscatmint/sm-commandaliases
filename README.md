@@ -4,7 +4,7 @@
 
 ### This SourceMod plugin provides aliases to commands.
 
-Let it be of annoyance or ease-of-access, this plugin aims to fix that problem.
+Let it be of annoyance or ease-of-access, this plugin aims to fix those problems.
 
 ---
 
@@ -51,5 +51,13 @@ This can be implemented by using `{{args}}` template in the destination command.
 
 The following configuration would redirect from `sm_h 12` to `sm_help 12`.
 ```
-    "sm_h"  "sm_help {{args}}"
+"sm_h"  "sm_help {{args}}"
 ```
+
+---
+
+#### **Requirements for an alias**
+- An alias command cannot be empty.
+- An alias command cannot contain whitespace.
+- An alias command's destination cannot be empty.
+- An alias command cannot be an already existing alias command.
