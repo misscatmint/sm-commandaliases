@@ -28,7 +28,7 @@ static char gC_ValidationPhrases[ValidationError_COUNT][] =
 	"None",
 	"Alias commands cannot be empty",
 	"Alias commands cannot contain whitespace",
-	"Destination command cannot be empty",
+	"Alias destinations cannot be empty",
 	"Alias commands cannot be duplicate"
 };
 
