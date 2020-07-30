@@ -23,7 +23,7 @@ enum AliasValidationError
 	ValidationError_COUNT
 };
 
-static char ValidationPhrases[ValidationError_COUNT][] =
+static char gC_ValidationPhrases[ValidationError_COUNT][] =
 {
 	"None",
 	"Alias commands cannot be empty",
@@ -75,7 +75,7 @@ public void OnAllPluginsLoaded()
 				AliasDescriptor alias;
 				aliases.GetArray(i, alias);
 
-				LogError("Validation of alias \"%s\" failed, reason: \"%s\"", alias.Command, ValidationPhrases[error]);
+				LogError("Validation of alias \"%s\" failed, reason: \"%s\"", alias.Command, gC_ValidationPhrases[error]);
 			}
 		}
 	}
