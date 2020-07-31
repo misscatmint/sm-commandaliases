@@ -248,9 +248,6 @@ int RegisterAndHookAliases(ArrayList aliases, StringMap destination, bool clearD
 
 bool PerformAlias(int client, int args, AliasDescriptor alias)
 {
-
-
-
 	int argsIdx = StrContains(alias.Destination, " ");
 	if (argsIdx != -1)
 	{
