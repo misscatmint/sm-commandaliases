@@ -156,7 +156,6 @@ ArrayList GetValidAliases(ArrayList candicates, ArrayList validationResults = nu
 	return validAliases;
 }
 
-
 AliasValidationError ValidateAlias(AliasDescriptor alias, ArrayList existingAliases)
 {
 	TrimString(alias.Command);
@@ -249,17 +248,8 @@ int RegisterAndHookAliases(ArrayList aliases, StringMap destination, bool clearD
 
 bool PerformAlias(int client, int args, AliasDescriptor alias)
 {
-	// TODO: Can we validate if we're in a command hook context?
 
-	if (alias.Command[0] == '\0')
-	{
-		return false;
-	}
 
-	if (alias.Destination[0] == '\0')
-	{
-		return false;
-	}
 
 	int argsIdx = StrContains(alias.Destination, " ");
 	if (argsIdx != -1)
