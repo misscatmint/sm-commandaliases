@@ -113,22 +113,10 @@ ArrayList ParseAliasesFromKeyValuesFile(char filePath[PLATFORM_MAX_PATH])
 		bool isSimpleDefinition = (kv.GetDataType(NULL_STRING) == KvData_String);
 		if (isSimpleDefinition)
 		{
-			/*
-				Simple definition:
-				"sm_myalias"	"sm_help"
-			*/
 			kv.GetString(NULL_STRING, alias.Destination, sizeof(alias.Destination));
 		}
 		else
 		{
-			/*
-				Detailed definition:
-				"sm_myalias"
-				{
-					"destination"	"sm_help"
-					"chatmessage"	"Hello World"
-				}
-			*/
 			kv.GetString("destination", alias.Destination, sizeof(alias.Destination));
 			kv.GetString("chatmessage", alias.ChatMessage, sizeof(alias.ChatMessage));
 		}
