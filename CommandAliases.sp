@@ -156,6 +156,43 @@ ArrayList GetValidAliases(ArrayList candicates, ArrayList validationResults = nu
 	return validAliases;
 }
 
+
+AliasValidationError ValidateAlias(AliasDescriptor alias, ArrayList existingAliases)
+{
+	TrimString(alias.Command);
+	TrimString(alias.Destination);
+
+	StringToLower(alias.Command);
+
+	if (alias.Command[0] == '\0')
+	{
+		return ValidationError_AliasEmpty;
+	}
+
+	if (StrContains(alias.Command, " ") != -1)
+	{
+		return ValidationError_AliasWhitespace;
+	}
+
+	if (alias.Destination[0] == '\0')
+	{
+		return ValidationError_DestinationEmpty;
+	}
+
+	for (int i = 0; i < existingAliases.Length; i++)
+	{
+		AliasDescriptor existingAlias;
+		existingAliases.GetArray(i, existingAlias);
+
+		if (StrEqual(existingAlias.Command, alias.Command))
+		{
+			return ValidationError_AliasDuplicateKey;
+		}
+	}
+
+	return ValidationError_None;
+}
+
 int RegisterAndHookAliases(ArrayList aliases, StringMap destination, bool clearDestination = true)
 {
 	if (aliases == null || aliases.Length <= 0)
@@ -208,46 +245,6 @@ int RegisterAndHookAliases(ArrayList aliases, StringMap destination, bool clearD
 	}
 
 	return hookCount;
-}
-
-AliasValidationError ValidateAlias(AliasDescriptor alias, ArrayList existingAliases)
-{
-	TrimString(alias.Command);
-	TrimString(alias.Destination);
-
-	StringToLower(alias.Command);
-
-	// Empty aliases are not valid
-	if (alias.Command[0] == '\0')
-	{
-		return ValidationError_AliasEmpty;
-	}
-
-	// Aliases with whitespace are not valid
-	if (StrContains(alias.Command, " ") != -1)
-	{
-		return ValidationError_AliasWhitespace;
-	}
-
-	// Empty destinations are not valid
-	if (alias.Destination[0] == '\0')
-	{
-		return ValidationError_DestinationEmpty;
-	}
-
-	// Duplicate aliases are not valid
-	for (int i = 0; i < existingAliases.Length; i++)
-	{
-		AliasDescriptor existingAlias;
-		existingAliases.GetArray(i, existingAlias);
-
-		if (StrEqual(existingAlias.Command, alias.Command))
-		{
-			return ValidationError_AliasDuplicateKey;
-		}
-	}
-
-	return ValidationError_None;
 }
 
 bool PerformAlias(int client, int args, AliasDescriptor alias)
