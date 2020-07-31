@@ -358,10 +358,6 @@ public Action Command_Alias(int client, int args)
 
 	StringToLower(commandName);
 
-	/*
-		Command hooks cannot be unregistered,
-		so we need to ask our collection if it's still active.
-	*/
 	AliasDescriptor alias;
 	if (!g_Aliases.GetArray(commandName, alias, sizeof(alias)))
 	{
