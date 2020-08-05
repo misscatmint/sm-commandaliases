@@ -19,7 +19,7 @@ enum struct AliasDescriptor
 enum struct AliasArgumentDescriptor
 {
 	int Index;
-	char Label[128];
+	char Label[32];
 
 	bool Required;
 
