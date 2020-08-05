@@ -481,7 +481,7 @@ public Action Command_Alias(int client, int args)
 	}
 	else
 	{
-		ReplyToCommand(client, "%s", alias.Destination);
+		FakeClientCommandEx(client, "%s", alias.Destination);
 	}
 
 	if (alias.ChatMessage[0] != '\0')
