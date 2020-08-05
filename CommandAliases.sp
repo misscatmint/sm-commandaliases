@@ -1,3 +1,4 @@
+#include <regex>
 #include <sourcemod>
 
 #pragma semicolon 1
@@ -11,6 +12,20 @@ enum struct AliasDescriptor
 	char Destination[256];
 
 	char ChatMessage[128];
+
+	ArrayList Arguments;
+}
+
+enum struct AliasArgumentDescriptor
+{
+	int Index;
+	char Label[128];
+
+	bool Required;
+
+	// Full match from the Regex collection
+	// I believe we can construct this ourselves, from the above properties.
+	char FullMatch[64];
 }
 
 enum AliasValidationError
@@ -94,7 +109,7 @@ public void OnAllPluginsLoaded()
 	delete validAliases;
 }
 
-ArrayList ParseAliasesFromKeyValuesFile(char filePath[PLATFORM_MAX_PATH])
+ArrayList ParseAliasesFromKeyValuesFile(const char filePath[PLATFORM_MAX_PATH])
 {
 	KeyValues kv = new KeyValues("CommandAliases");
 	if (kv == null || !kv.ImportFromFile(filePath))
@@ -121,10 +136,58 @@ ArrayList ParseAliasesFromKeyValuesFile(char filePath[PLATFORM_MAX_PATH])
 			kv.GetString("chatmessage", alias.ChatMessage, sizeof(alias.ChatMessage));
 		}
 
+		alias.Arguments = ParseAliasArguments(alias.Destination);
+		alias.Arguments.SortCustom(Sort_ArgumentIndex);
+
 		aliases.PushArray(alias);
 	}
 
 	return aliases;
+}
+
+ArrayList ParseAliasArguments(const char[] input)
+{
+	static Regex argRegex;
+	if (argRegex == null)
+	{
+		argRegex = new Regex("[\\[\\<]([1-9])(?:\\:([a-zA-Z]+))?[\\]\\>]");
+	}
+
+	ArrayList arguments = new ArrayList(sizeof(AliasArgumentDescriptor));
+
+	int matchCount = argRegex.MatchAll(input);
+	for (int i = 0; i < matchCount; i++)
+	{
+		AliasArgumentDescriptor argument;
+		argRegex.GetSubString(0, argument.FullMatch, sizeof(argument.FullMatch), i);
+
+		char firstChar = (argument.FullMatch[0]);
+		char lastChar = (argument.FullMatch[strlen(argument.FullMatch) - 1]);
+
+		bool isOptional = (firstChar == '[' && lastChar == ']');
+		bool isRequired = (firstChar == '<' && lastChar == '>');
+
+		if (!isOptional && !isRequired)
+		{
+			continue;
+		}
+
+		argument.Required = isRequired;
+
+		char szArgIdx[12];
+		argRegex.GetSubString(1, szArgIdx, sizeof(szArgIdx), i);
+
+		argument.Index = StringToInt(szArgIdx);
+
+		if (argRegex.CaptureCount(i) >= 2)
+		{
+			argRegex.GetSubString(2, argument.Label, sizeof(argument.Label), i);
+		}
+
+		arguments.PushArray(argument);
+	}
+
+	return arguments;
 }
 
 ArrayList GetValidAliases(ArrayList candicates, ArrayList validationResults = null)
@@ -246,40 +309,77 @@ int RegisterAndHookAliases(ArrayList aliases, StringMap destination, bool clearD
 	return hookCount;
 }
 
-bool PerformAlias(int client, int args, AliasDescriptor alias)
+bool HasAliasArguments(ArrayList args, const int userArgCount)
 {
-	int argsIdx = StrContains(alias.Destination, " ");
-	if (argsIdx != -1)
+	if (args == null || args.Length <= 0)
 	{
-		if (StrContains(alias.Destination[argsIdx], "{{args}}") != -1)
-		{
-			char argString[128];
-			if (args > 0)
-			{
-				GetCmdArgString(argString, sizeof(argString));
-			}
+		return true;
+	}
 
-			ReplaceString(alias.Destination[argsIdx], sizeof(alias.Destination), "{{args}}", argString);
+	AliasArgumentDescriptor highestArg;
+	args.GetArray(args.Length - 1, highestArg);
+
+	if (userArgCount >= highestArg.Index)
+	{
+		return true;
+	}
+
+	for (int i = 0; i < args.Length; i++)
+	{
+		AliasArgumentDescriptor arg;
+		args.GetArray(i, arg);
+
+		if (arg.Required && arg.Index > userArgCount)
+		{
+			return false;
 		}
 	}
 
-	TrimString(alias.Destination);
-
-	if (client == 0)
-	{
-		ServerCommand("%s", alias.Destination);
-	}
-	else
-	{
-		FakeClientCommandEx(client, "%s", alias.Destination);
-	}
-
-	if (alias.ChatMessage[0] != '\0')
-	{
-		ReplyToCommand(client, "%s", alias.ChatMessage);
-	}
-
 	return true;
+}
+
+void PerformAliasUsage(const int client, AliasDescriptor alias)
+{
+	AliasArgumentDescriptor highestArg;
+	alias.Arguments.GetArray(alias.Arguments.Length - 1, highestArg);
+
+	char args[256];
+	for (int i = 1; i <= highestArg.Index; i++)
+	{
+		int arrayIdx = -1;
+		for (int j = 0; j < alias.Arguments.Length; j++)
+		{
+			AliasArgumentDescriptor arg;
+			alias.Arguments.GetArray(j, arg);
+
+			if (arg.Index == i)
+			{
+				arrayIdx = j;
+				break;
+			}
+		}
+
+		if (arrayIdx == -1)
+		{
+			StrCat(args, sizeof(args), " <unused>");
+		}
+		else
+		{
+			AliasArgumentDescriptor arg;
+			alias.Arguments.GetArray(arrayIdx, arg);
+
+			if (arg.Required)
+			{
+				Format(args, sizeof(args), "%s <%s>", args, arg.Label);
+			}
+			else
+			{
+				Format(args, sizeof(args), "%s [%s]", args, arg.Label);
+			}
+		}
+	}
+
+	ReplyToCommand(client, "Usage: %s %s", alias.Command, args);
 }
 
 // ===== [ COMMANDS ] =====
@@ -351,9 +451,42 @@ public Action Command_Alias(int client, int args)
 		return Plugin_Continue;
 	}
 
-	if (!PerformAlias(client, args, alias))
+	if (!HasAliasArguments(alias.Arguments, args))
 	{
-		return Plugin_Continue;
+		PerformAliasUsage(client, alias);
+		return Plugin_Handled;
+	}
+
+	char argString[256];
+	GetCmdArgString(argString, sizeof(argString));
+	ReplaceString(alias.Destination, sizeof(alias.Destination), "{{args}}", argString);
+
+	for (int i = 0; i < alias.Arguments.Length; i++)
+	{
+		AliasArgumentDescriptor arg;
+		alias.Arguments.GetArray(i, arg);
+
+		char argValue[64];
+		GetCmdArg(arg.Index, argValue, sizeof(argValue));
+
+		ReplaceStringEx(alias.Destination, sizeof(alias.Destination), arg.FullMatch, argValue);
+	}
+
+	TrimString(alias.Destination);
+	PrintToServer("Executing: \"%s\"", alias.Destination);
+
+	if (client == 0)
+	{
+		ServerCommand("%s", alias.Destination);
+	}
+	else
+	{
+		ReplyToCommand(client, "%s", alias.Destination);
+	}
+
+	if (alias.ChatMessage[0] != '\0')
+	{
+		ReplyToCommand(client, "%s", alias.ChatMessage);	
 	}
 
 	return Plugin_Handled;
@@ -370,7 +503,7 @@ void StringToLower(char[] input)
 	}
 }
 
-ArrayList StringMapKeysToList(StringMap map, int maxKeyBytes)
+ArrayList StringMapKeysToList(StringMap map, const int maxKeyBytes)
 {
 	ArrayList list = new ArrayList(ByteCountToCells(maxKeyBytes));
 
@@ -385,4 +518,27 @@ ArrayList StringMapKeysToList(StringMap map, int maxKeyBytes)
 
 	delete keys;
 	return list;
+}
+
+int Sort_ArgumentIndex(int index1, int index2, Handle array, Handle hndl)
+{
+	ArrayList list = view_as<ArrayList>(array);
+
+	AliasArgumentDescriptor first;
+	list.GetArray(index1, first);
+
+	AliasArgumentDescriptor second;
+	list.GetArray(index2, second);
+
+	if (first.Index < second.Index)
+	{
+		return -1;
+	}
+
+	if (first.Index > second.Index)
+	{
+		return 1;	
+	}
+
+	return 0;
 }
