@@ -379,6 +379,7 @@ void PerformAliasUsage(const int client, AliasDescriptor alias)
 		}
 	}
 
+	TrimString(args);
 	ReplyToCommand(client, "Usage: %s %s", alias.Command, args);
 }
 
