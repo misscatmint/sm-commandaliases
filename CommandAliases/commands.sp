@@ -1,6 +1,7 @@
-void RegisterAliasListCommand()
+void RegisterCommands()
 {
 	RegAdminCmd("sm_commandaliases_list", Command_ListAliases, ADMFLAG_RCON, "Lists command aliases.");
+	RegAdminCmd("sm_commandaliases_reload", Command_ReloadAliases, ADMFLAG_RCON, "Reloads command aliases.");
 }
 
 public Action Command_ListAliases(int client, int args)
@@ -23,5 +24,14 @@ public Action Command_ListAliases(int client, int args)
 	}
 
 	delete aliases;
+	return Plugin_Handled;
+}
+
+public Action Command_ReloadAliases(int client, int args)
+{
+	ClearAliases();
+	LoadAliasesFromKeyValues(client);
+
+	ReplyToCommand(client, "Reloaded command aliases!");
 	return Plugin_Handled;
 }

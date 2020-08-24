@@ -7,11 +7,10 @@
 #include "CommandAliases/helpers.sp"
 #include "CommandAliases/aliases.sp"
 #include "CommandAliases/parsing.sp"
+#include "CommandAliases/commands.sp"
 #include "CommandAliases/validation.sp"
 
-#include "CommandAliases/commands/list.sp"
-#include "CommandAliases/commands/reload.sp"
-#include "CommandAliases/commands/positional.sp"
+#include "CommandAliases/listeners/positional.sp"
 
 ConVar gCV_ConfigPath = null;
 
@@ -29,9 +28,7 @@ public Plugin myinfo =
 public void OnPluginStart()
 {
 	InitAliases();
-
-	RegisterAliasListCommand();
-	RegisterAliasReloadCommand();
+	RegisterCommands();
 
 	gCV_ConfigPath = CreateConVar("commandaliases_config_path",
 									"cfg/sourcemod/CommandAliases.cfg",
