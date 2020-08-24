@@ -30,7 +30,7 @@ public Action Command_PositionalListener(int client, int args)
 		alias.Arguments.GetArray(i, arg);
 
 		char argValue[64];
-		GetCmdArg(arg.Index, argValue, sizeof(argValue));
+		GetCmdArg(arg.Index, argValue, sizeof(argValue) - 2);
 
 		Format(argValue, sizeof(argValue), "\"%s\"", argValue);
 		ReplaceStringEx(alias.Destination, sizeof(alias.Destination), arg.FullMatch, argValue);
