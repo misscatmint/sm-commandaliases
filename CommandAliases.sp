@@ -19,7 +19,7 @@ public Plugin myinfo =
 	name = "CommandAliases",
 	author = "Sikari",
 	description = "",
-	version = "1.0.0",
+	version = "2.0.0",
 	url = "https://bitbucket.org/Sikarii/sm-commandaliases"
 };
 
