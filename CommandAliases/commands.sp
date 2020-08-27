@@ -19,8 +19,12 @@ public Action Command_ListAliases(int client, int args)
 		AliasDescriptor alias;
 		aliases.GetArray(i, alias);
 
-		ReplyToCommand(client, "\n%s \n[Destination] - \"%s\"",
-								alias.Command, alias.Destination);
+		ReplyToCommand(client, "\n%s\n\
+								[Destination   ] %s\n\
+								[Command Flags ] %d",
+								alias.Command,
+								alias.Destination,
+								alias.CommandFlags);
 	}
 
 	delete aliases;

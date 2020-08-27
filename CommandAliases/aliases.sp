@@ -7,6 +7,8 @@ enum struct AliasDescriptor
 
 	ArrayList Arguments;
 	char UsageBuffer[256];
+
+	int CommandFlags;
 }
 
 enum struct AliasArgumentDescriptor

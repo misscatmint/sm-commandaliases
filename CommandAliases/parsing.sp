@@ -22,6 +22,11 @@ ArrayList ParseAliasesFromKeyValuesFile(char filePath[PLATFORM_MAX_PATH])
 		else
 		{
 			kv.GetString("destination", alias.Destination, sizeof(alias.Destination));
+
+			char flags[32];
+			kv.GetString("required_flags", flags, sizeof(flags));
+
+			alias.CommandFlags = ReadFlagString(flags);
 		}
 
 		aliases.PushArray(alias);
