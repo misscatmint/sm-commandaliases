@@ -20,11 +20,13 @@ public Action Command_ListAliases(int client, int args)
 		aliases.GetArray(i, alias);
 
 		ReplyToCommand(client, "\n%s\n\
-								[Destination   ] %s\n\
-								[Command Flags ] %d",
+								[Destination            ] %s\n\
+								[Required Command Flags ] %d\n\
+								[Explicit Server Execute] %d",
 								alias.Command,
 								alias.Destination,
-								alias.CommandFlags);
+								alias.CommandFlags,
+								alias.ExplicitServerExecute);
 	}
 
 	delete aliases;

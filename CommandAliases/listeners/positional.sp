@@ -37,6 +37,15 @@ public Action Command_PositionalListener(int client, int args)
 	}
 
 	ExecuteCommand(client, alias.Destination);
+	if (alias.ExplicitServerExecute)
+	{
+		ExecuteCommand(0, alias.Destination);
+	}
+	else
+	{
+		ExecuteCommand(client, alias.Destination);
+	}
+
 	return Plugin_Handled;
 }
 

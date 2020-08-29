@@ -9,6 +9,7 @@ enum struct AliasDescriptor
 	char UsageBuffer[256];
 
 	int CommandFlags;
+	bool ExplicitServerExecute;
 }
 
 enum struct AliasArgumentDescriptor
