@@ -36,7 +36,6 @@ public Action Command_PositionalListener(int client, int args)
 		ReplaceStringEx(alias.Destination, sizeof(alias.Destination), arg.FullMatch, argValue);
 	}
 
-	ExecuteCommand(client, alias.Destination);
 	if (alias.ExplicitServerExecute)
 	{
 		ExecuteCommand(0, alias.Destination);
