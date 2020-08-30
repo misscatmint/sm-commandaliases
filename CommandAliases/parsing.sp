@@ -27,6 +27,7 @@ ArrayList ParseAliasesFromKeyValuesFile(char filePath[PLATFORM_MAX_PATH])
 			kv.GetString("required_flags", flags, sizeof(flags));
 
 			alias.CommandFlags = ReadFlagString(flags);
+			alias.ExplicitServerExecute = kv.GetNum("explicit_server_execute", 0) == 1;
 		}
 
 		aliases.PushArray(alias);
