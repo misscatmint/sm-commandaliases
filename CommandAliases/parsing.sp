@@ -1,4 +1,4 @@
-ArrayList ParseAliasesFromKeyValuesFile(char filePath[PLATFORM_MAX_PATH])
+ArrayList ParseAliasesFromKeyValuesFile(const char filePath[PLATFORM_MAX_PATH])
 {
 	KeyValues kv = new KeyValues("CommandAliases");
 	if (kv == null || !kv.ImportFromFile(filePath))
@@ -36,7 +36,7 @@ ArrayList ParseAliasesFromKeyValuesFile(char filePath[PLATFORM_MAX_PATH])
 	return aliases;
 }
 
-ArrayList ParseAliasArguments(char[] destination)
+ArrayList ParseAliasArguments(const char[] destination)
 {
 	static Regex argRegex;
 	if (argRegex == null)
@@ -82,7 +82,7 @@ ArrayList ParseAliasArguments(char[] destination)
 	return arguments;
 }
 
-ArrayList ParseAliasArgumentsSorted(char[] destination)
+ArrayList ParseAliasArgumentsSorted(const char[] destination)
 {
 	ArrayList arguments = ParseAliasArguments(destination);
 	arguments.SortCustom(SortAscending_ArgumentIndexAndParseOrder);

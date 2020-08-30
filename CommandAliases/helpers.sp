@@ -7,7 +7,7 @@ void StringToLower(char[] input)
 	}
 }
 
-void ExecuteCommand(int client, char[] command)
+void ExecuteCommand(int client, const char[] command)
 {
 	if (client == 0)
 	{
@@ -25,7 +25,7 @@ void GetCommandNameAsLower(char[] buffer, int maxlength)
 	StringToLower(buffer);
 }
 
-ArrayList StringMapKeysToList(StringMap map, int maxKeyBytes)
+ArrayList StringMapKeysToList(StringMap map, const int maxKeyBytes)
 {
 	ArrayList list = new ArrayList(ByteCountToCells(maxKeyBytes));
 

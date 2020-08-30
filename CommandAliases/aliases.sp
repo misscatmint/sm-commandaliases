@@ -76,13 +76,13 @@ int GetAliasesCount()
 	return AliasMap.Size;
 }
 
-bool AliasExists(char[] aliasName)
+bool AliasExists(const char[] aliasName)
 {
 	AliasDescriptor unused;
 	return (AliasMap.GetArray(aliasName, unused, 1));
 }
 
-bool GetAliasByName(char[] name, AliasDescriptor alias)
+bool GetAliasByName(const char[] name, AliasDescriptor alias)
 {
 	return (AliasMap.GetArray(name, alias, sizeof(alias)));
 }
@@ -105,7 +105,7 @@ void RegisterAlias(AliasDescriptor alias)
 
 // ===== [ PRIVATE ] =====
 
-static bool ShouldHookCommand(char[] command)
+static bool ShouldHookCommand(const char[] command)
 {
 	static StringMap MyHooks;
 	if (MyHooks == null)
