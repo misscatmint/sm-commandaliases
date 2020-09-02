@@ -1,6 +1,6 @@
 void RegisterAliasPositionalListener(AliasDescriptor alias)
 {
-	RegAdminCmd(alias.Command, Command_PositionalListener, alias.CommandFlags, "Alias command", "CommandAliases");
+	RegAdminCmd(alias.Command, Command_PositionalListener, alias.AdminFlags, "Alias command", "CommandAliases");
 }
 
 public Action Command_PositionalListener(int client, int args)

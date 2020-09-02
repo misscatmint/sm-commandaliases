@@ -23,10 +23,10 @@ ArrayList ParseAliasesFromKeyValuesFile(const char filePath[PLATFORM_MAX_PATH])
 		{
 			kv.GetString("destination", alias.Destination, sizeof(alias.Destination));
 
-			char flags[32];
-			kv.GetString("required_flags", flags, sizeof(flags));
+			char szAdminFlags[32];
+			kv.GetString("admin_flagstring", szAdminFlags, sizeof(szAdminFlags));
 
-			alias.CommandFlags = ReadFlagString(flags);
+			alias.AdminFlags = ReadFlagString(szAdminFlags);
 			alias.ExplicitServerExecute = kv.GetNum("explicit_server_execute", 0) == 1;
 		}
 

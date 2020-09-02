@@ -21,11 +21,11 @@ public Action Command_ListAliases(int client, int args)
 
 		ReplyToCommand(client, "\n%s\n\
 								[Destination            ] %s\n\
-								[Required Command Flags ] %d\n\
+								[Required Admin Flags   ] %d\n\
 								[Explicit Server Execute] %d",
 								alias.Command,
 								alias.Destination,
-								alias.CommandFlags,
+								alias.AdminFlags,
 								alias.ExplicitServerExecute);
 	}
 
