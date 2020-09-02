@@ -45,18 +45,18 @@ AliasValidationError ValidateAlias(AliasDescriptor alias)
 	return ValidationError_None;
 }
 
-bool AssertAliasValid(AliasDescriptor alias, int recipient = -1)
+bool AssertAliasValid(AliasDescriptor alias, int invoker = -1)
 {
 	AliasValidationError error = ValidateAlias(alias);
 	if (error != ValidationError_None)
 	{
-		if (recipient <= 0)
+		if (invoker <= 0)
 		{
 			LogError("\"%s\": %s", alias.Command, ValidationPhrases[error]);
 		}
 		else
 		{
-			ReplyToCommand(recipient, "\"%s\": %s", alias.Command, ValidationPhrases[error]);
+			ReplyToCommand(invoker, "\"%s\": %s", alias.Command, ValidationPhrases[error]);
 		}
 
 		return false;

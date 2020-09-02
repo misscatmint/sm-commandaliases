@@ -42,7 +42,7 @@ public void OnAllPluginsLoaded()
 	LoadAliasesFromKeyValues();
 }
 
-bool LoadAliasesFromKeyValues(int recipient = -1)
+bool LoadAliasesFromKeyValues(int invoker = -1)
 {
 	char path[PLATFORM_MAX_PATH];
 	gCV_ConfigPath.GetString(path, sizeof(path));
@@ -64,7 +64,7 @@ bool LoadAliasesFromKeyValues(int recipient = -1)
 		AliasDescriptor alias;
 		aliases.GetArray(i, alias);
 
-		if (AssertAliasValid(alias, recipient))
+		if (AssertAliasValid(alias, invoker))
 		{
 			InitAlias(alias);
 			RegisterAlias(alias);
