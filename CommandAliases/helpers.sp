@@ -25,6 +25,12 @@ void GetCommandNameAsLower(char[] buffer, int maxlength)
 	StringToLower(buffer);
 }
 
+void GetCommandArgumentSafe(int index, char[] buffer, int maxlength)
+{
+	GetCmdArg(index, buffer, (maxlength - 2));
+	Format(buffer, maxlength, "\"%s\"", buffer);
+}
+
 ArrayList StringMapKeysToList(StringMap map, const int maxKeyBytes)
 {
 	ArrayList list = new ArrayList(ByteCountToCells(maxKeyBytes));
