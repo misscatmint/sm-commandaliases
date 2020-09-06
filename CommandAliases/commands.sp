@@ -19,14 +19,18 @@ public Action Command_ListAliases(int client, int args)
 		AliasDescriptor alias;
 		aliases.GetArray(i, alias);
 
+		int effectiveAdminFlags = GetEffectiveFlags(alias);
+
 		ReplyToCommand(client, "\n%s\n\
-								[Destination            ] %s\n\
-								[Required Admin Flags   ] %d\n\
-								[Explicit Server Execute] %d",
+								[Destination                 ] => %s\n\
+								[Explicit Server Execute     ] => %d\n\
+								[Real Admin Flags            ] => %s\n\
+								[Effective Admin Flags       ] => %s",
 								alias.Command,
 								alias.Destination,
-								alias.AdminFlags,
-								alias.ExplicitServerExecute);
+								alias.ExplicitServerExecute,
+								GetFlagString(alias.AdminFlags),
+								GetFlagString(effectiveAdminFlags));
 	}
 
 	delete aliases;
@@ -42,4 +46,38 @@ public Action Command_ReloadAliases(int client, int args)
 	}
 
 	return Plugin_Handled;
+}
+
+static int GetEffectiveFlags(AliasDescriptor alias)
+{
+	// Command override always has priority
+	int eFlags;
+	if (GetCommandOverride(alias.Command, Override_Command, eFlags))
+	{
+		return eFlags;
+	}
+
+	if (GetCommandOverride("CommandAliases", Override_CommandGroup, eFlags))
+	{
+		return eFlags;
+	}
+
+	return alias.AdminFlags;
+}
+
+static char[] GetFlagString(int adminFlagsBits)
+{
+	AdminFlag flags[AdminFlags_TOTAL];
+	int flagCount = FlagBitsToArray(adminFlagsBits, flags, sizeof(flags));
+
+	char buffer[32];
+	for (int i = 0; i < flagCount; i++)
+	{
+		int flag;
+		FindFlagChar(flags[i], flag);
+
+		buffer[i] = flag;
+	}
+
+	return strlen(buffer) > 0 ? buffer : "none";
 }
