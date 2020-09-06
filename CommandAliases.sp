@@ -12,8 +12,6 @@
 
 #include "CommandAliases/listeners/positional.sp"
 
-ConVar gCV_ConfigPath = null;
-
 public Plugin myinfo =
 {
 	name = "CommandAliases",
@@ -30,11 +28,6 @@ public void OnPluginStart()
 	InitAliases();
 	RegisterCommands();
 
-	gCV_ConfigPath = CreateConVar("commandaliases_config_path",
-									"cfg/sourcemod/CommandAliases.cfg",
-									"Config file to load aliases from.");
-
-	AutoExecConfig(true, "CommandAliases-Convars");
 }
 
 public void OnAllPluginsLoaded()
@@ -44,13 +37,7 @@ public void OnAllPluginsLoaded()
 
 bool LoadAliasesFromKeyValues(int invoker = -1)
 {
-	char path[PLATFORM_MAX_PATH];
-	gCV_ConfigPath.GetString(path, sizeof(path));
-
-	if (path[0] == '\0')
-	{
-		return false;
-	}
+	char path[PLATFORM_MAX_PATH] = "cfg/sourcemod/CommandAliases.cfg";
 
 	ArrayList aliases = ParseAliasesFromKeyValuesFile(path);
 	if (aliases == null)
