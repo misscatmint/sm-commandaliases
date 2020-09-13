@@ -33,6 +33,7 @@ ArrayList ParseAliasesFromKeyValuesFile(const char filePath[PLATFORM_MAX_PATH])
 		aliases.PushArray(alias);
 	}
 
+	delete kv;
 	return aliases;
 }
 
