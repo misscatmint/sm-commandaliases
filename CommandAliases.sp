@@ -8,6 +8,7 @@
 #include "CommandAliases/aliases.sp"
 #include "CommandAliases/parsing.sp"
 #include "CommandAliases/commands.sp"
+#include "CommandAliases/templating.sp"
 #include "CommandAliases/validation.sp"
 
 #include "CommandAliases/listeners/positional.sp"

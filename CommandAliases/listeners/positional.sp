@@ -20,9 +20,7 @@ public Action Command_PositionalListener(int client, int args)
 		return Plugin_Handled;
 	}
 
-	char argString[256];
-	GetCmdArgString(argString, sizeof(argString));
-	ReplaceString(alias.Destination, sizeof(alias.Destination), "{{args}}", argString);
+	ExpandAllVariables(alias.Destination, sizeof(alias.Destination));
 
 	for (int i = 0; i < alias.Arguments.Length; i++)
 	{
