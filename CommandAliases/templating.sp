@@ -31,7 +31,7 @@ void ExpandVariable(TemplatingVariable variable, char[] buffer, int maxlength)
 		}
 		case Variable_CommandName:
 		{
-			char cmdName[sizeof(Alias::Command)];
+			char cmdName[sizeof(AliasDescriptor::Command)];
 			GetCmdArg(0, cmdName, sizeof(cmdName));
 			ReplaceString(buffer, maxlength, TemplatingVariables[variable], cmdName);
 		}
