@@ -10,8 +10,8 @@ Let it be of annoyance, ease-of-access or delegation of access, this plugin aims
 
 ## Configuration
 
-Command aliases are automatically loaded from `/cfg/sourcemod/CommandAliases.cfg`.
--- **The file is in KeyValues format and must start with the "CommandAliases" root section**.
+Command aliases are automatically loaded from `/cfg/sourcemod/CommandAliases.cfg`.  
+**The file is in KeyValues format and must start with the "CommandAliases" root section**.
 
 Defining properties can be done in two ways:
 ```
@@ -29,8 +29,9 @@ Defining properties can be done in two ways:
 
 
 #### Available properties
--- **Bolded** properties are **required**.
--- Parsed properties can also be found [here](CommandAliases/parsing.sp).
+-- **Bolded** properties are **required**.  
+-- Parsed properties can also be found [here](CommandAliases/parsing.sp).  
+
 |Property|Type|Description|
 |--------|----|-----------|
 | **destination** | string | Destination (template) for the alias.
@@ -42,29 +43,29 @@ Defining properties can be done in two ways:
 ## Examples of the destination property
 
 Having the following as the destination: `sm_ban <1:target> 0 [2:reason]` would produce the following:
+
 - First argument would be marked as **required** and would have the label "target".
 - Second argument would be marked as **optional** and would have the label "reason".
 - An usage message if the first argument is not provided: `Usage: sm_alias <target> [reason]`.
     - This will trigger when the first argument (that is marked as **required**) is not provided by the user.
 
-##### In addition to the above, some additional templating can also be applied:
+#### In addition to the above, some additional templating can also be applied:
 - `sm_help {{args}}` would expand to `sm_help` and all the arguments the user provided.
 - Please note that the `{{args}}` variable **cannot be marked as required**, use the `<>` notation.
 - Please also note that as of documenting, the `{{args}}` variable is **unsafe** as it's not quoted nor escaped.
 
-#### Available templating
+### Available templating
 |Variable|Description|
 |--------|-----------|
 | {{args}} | [Expands to the entire argument string](https://sm.alliedmods.net/new-api/console/GetCmdArgString).
 | {{commandname}} | Expands to the invoked alias' command name.
----
 
 ## Permissions
 
-All commands created by this plugin will be put under the **CommandAliases** group.
+All commands created by this plugin will be put under the **CommandAliases** group.  
 All aliases can also be given the `admin_flagstring` property to restrict access to them.
 
-You can setup overrides either separately `sm_a` or the entire group `@CommandAliases`.
+You can setup overrides either separately `sm_a` or the entire group `@CommandAliases`.  
 Keep in mind that any type of override takes priority over the admin flags set on the alias.
 
 If you wanna get more in-depth with overrides, see [the SourceMod wiki](https://wiki.alliedmods.net/Overriding_Command_Access_(SourceMod)).
