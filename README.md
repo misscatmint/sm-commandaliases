@@ -41,6 +41,14 @@ Defining properties can be done in two ways:
         "destination"       "sm_admin"
         "admin_flagstring"  "b"
     }
+
+	// A command that allows users with ADMFLAG_RESERVATION to execute a specific server command.
+	"sm_w"
+	{
+		"destination"				"host_workshop_map <1:workshopid>"	// Executes this command
+		"admin_flagstring"			"a" // Usable by users with "ADMFLAG_RESERVATION" flag
+		"explicit_server_execute"	"1" // Explicitly (always) execute the destination as the server.
+	}
 }
 ```
 
