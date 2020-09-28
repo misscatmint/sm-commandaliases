@@ -8,6 +8,23 @@ Let it be of annoyance, ease-of-access or delegation of access, this plugin aims
 
 ---
 
+## Installation
+1. Download the [latest release](https://bitbucket.org/Sikarii/sm-commandaliases/downloads/CommandAliases-latest.smx) from the [downloads](https://bitbucket.org/Sikarii/sm-commandaliases/downloads/).
+2. Place the downloaded `smx` file into `{gamedir}/addons/sourcemod/plugins/`.
+3. [Configure](#markdown-header-configuration) `{gamedir}/cfg/sourcemod/CommandAliases.cfg` with the aliases you wish to have.
+4. You're done, use `sm_commandaliases_list` to verify the aliases you've setup.
+
+Note: `{gamedir}` is your game's directory, this could be "csgo" or "tf2" or anything else, depending on your game.
+
+
+---
+
+## Commands
+- `sm_commandaliases_list` - Lists all command aliases along with their properties.
+- `sm_commandaliases_reload` - Reloads all command aliases from the file if it was successfully loaded.
+
+---
+
 ## Configuration
 
 Command aliases are automatically loaded from `/cfg/sourcemod/CommandAliases.cfg`.  
@@ -26,7 +43,6 @@ Defining properties can be done in two ways:
     }
 }
 ```
-
 
 #### Available properties
 -- **Bolded** properties are **required**.  
@@ -59,6 +75,8 @@ Having the following as the destination: `sm_ban <1:target> 0 [2:reason]` would 
 |--------|-----------|
 | {{args}} | [Expands to the entire argument string](https://sm.alliedmods.net/new-api/console/GetCmdArgString).
 | {{commandname}} | Expands to the invoked alias' command name.
+
+---
 
 ## Permissions
 
@@ -127,7 +145,6 @@ Groups
 	}
 }
 ```
-
 
 ---
 
