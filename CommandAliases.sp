@@ -29,11 +29,9 @@ public void OnPluginStart()
 	InitAliases();
 	RegisterCommands();
 
-}
-
-public void OnAllPluginsLoaded()
-{
 	LoadAliasesFromKeyValues();
+
+	LoadTranslations("core.phrases");
 }
 
 bool LoadAliasesFromKeyValues(int invoker = -1)

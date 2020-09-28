@@ -14,6 +14,12 @@ public Action Command_PositionalListener(int client, int args)
 		return Plugin_Continue;
 	}
 
+	if (!CheckCommandAccess(client, "CommandAliases_Bypass", alias.AdminFlags))
+	{
+		ReplyToCommand(client, "[SM] %T", client, "No Access");
+		return Plugin_Handled;
+	}
+
 	if (!HasArguments(alias.Arguments, args))
 	{
 		ReplyToCommand(client, "Usage: %s", alias.UsageBuffer);
