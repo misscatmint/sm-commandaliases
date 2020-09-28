@@ -28,6 +28,7 @@ ArrayList ParseAliasesFromKeyValuesFile(const char filePath[PLATFORM_MAX_PATH])
 
 			alias.AdminFlags = ReadFlagString(szAdminFlags);
 			alias.ExplicitServerExecute = kv.GetNum("explicit_server_execute", 0) == 1;
+			alias.EscapeArgumentsBuffer = kv.GetNum("escape_arguments_buffer", 1) == 1;
 		}
 
 		aliases.PushArray(alias);

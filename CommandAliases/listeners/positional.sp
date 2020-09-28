@@ -20,7 +20,7 @@ public Action Command_PositionalListener(int client, int args)
 		return Plugin_Handled;
 	}
 
-	ExpandAllVariables(alias.Destination, sizeof(alias.Destination));
+	ExpandAllVariables(alias.Destination, sizeof(alias.Destination), alias.EscapeArgumentsBuffer);
 
 	for (int i = 0; i < alias.Arguments.Length; i++)
 	{

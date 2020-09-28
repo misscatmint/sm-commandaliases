@@ -53,6 +53,7 @@ Defining properties can be done in two ways:
 | **destination** | string | Destination (template) for the alias.
 | admin_flagstring | string | Admin flags required to execute the alias.
 | explicit_server_execute | bool | Explicitly (always) execute the alias as the server.
+| escape_arguments_buffer | bool | Escape `{{args}}` template variable, **do not change this unless you know what you're doing**!
 
 ---
 
@@ -68,7 +69,6 @@ Having the following as the destination: `sm_ban <1:target> 0 [2:reason]` would 
 #### In addition to the above, some additional templating can also be applied:
 - `sm_help {{args}}` would expand to `sm_help` and all the arguments the user provided.
 - Please note that the `{{args}}` variable **cannot be marked as required**, use the `<>` notation.
-- Please also note that as of documenting, the `{{args}}` variable is **unsafe** as it's not quoted nor escaped.
 
 ### Available templating
 |Variable|Description|

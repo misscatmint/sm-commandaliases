@@ -10,6 +10,7 @@ enum struct AliasDescriptor
 
 	int AdminFlags;
 	bool ExplicitServerExecute;
+	bool EscapeArgumentsBuffer;
 }
 
 enum struct AliasArgumentDescriptor

@@ -11,15 +11,15 @@ static char TemplatingVariables[TemplatingVariable_COUNT][] =
 	"{{commandname}}"
 };
 
-void ExpandAllVariables(char[] buffer, int maxlength)
+void ExpandAllVariables(char[] buffer, int maxlength, bool shouldEscape = true)
 {
 	for (TemplatingVariable v; v < TemplatingVariable_COUNT; v++)
 	{
-		ExpandVariable(v, buffer, maxlength);
+		ExpandVariable(v, buffer, maxlength, shouldEscape);
 	}
 }
 
-void ExpandVariable(TemplatingVariable variable, char[] buffer, int maxlength)
+void ExpandVariable(TemplatingVariable variable, char[] buffer, int maxlength, bool shouldEscape)
 {
 	switch (variable)
 	{
@@ -27,6 +27,12 @@ void ExpandVariable(TemplatingVariable variable, char[] buffer, int maxlength)
 		{
 			char args[256];
 			GetCmdArgString(args, sizeof(args));
+
+			if (shouldEscape)
+			{
+				ReplaceString(args, sizeof(args), ";", "");
+			}
+
 			ReplaceString(buffer, maxlength, TemplatingVariables[variable], args);
 		}
 		case Variable_CommandName:
