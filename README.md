@@ -56,7 +56,7 @@ Defining properties can be done in two ways:
 
 ---
 
-## Examples of the destination property
+## The destination property
 
 Having the following as the destination: `sm_ban <1:target> 0 [2:reason]` would produce the following:
 
