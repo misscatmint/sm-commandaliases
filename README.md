@@ -72,7 +72,7 @@ If you wanna get more in-depth with overrides, see [the SourceMod wiki](https://
 
 #### Examples of overrides:
 `/addons/sourcemod/configs/admin_overrides.cfg`:
-```
+```diff
 Overrides
 {
 	/**
@@ -99,7 +99,7 @@ Overrides
 ```
 
 `/addons/sourcemod/configs/admin_groups.cfg`:
-```
+```diff
 Groups
 {
 	/**
