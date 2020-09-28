@@ -42,7 +42,7 @@ Defining properties can be done in two ways:
         "admin_flagstring"  "b"
     }
 
-	// A command that allows users with ADMFLAG_RESERVATION to execute a specific server command.
+	// An alias that allows users with ADMFLAG_RESERVATION to execute a specific server command.
 	"sm_w"
 	{
 		"destination"				"host_workshop_map <1:workshopid>"	// Executes this command
