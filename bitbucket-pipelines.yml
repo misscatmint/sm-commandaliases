@@ -38,6 +38,10 @@ pipelines:
     compile:
       - step: *compile
 
+  branches:
+    'dev':
+      - step: *compile
+
   pull-requests:
     '*':
       - step: *compile
