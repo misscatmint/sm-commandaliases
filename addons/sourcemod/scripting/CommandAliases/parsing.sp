@@ -12,6 +12,7 @@ ArrayList ParseAliasesFromKeyValuesFile(const char filePath[PLATFORM_MAX_PATH])
 	while (kv.GotoNextKey(false) || (kv.GotoFirstSubKey(false) && kv.NodesInStack() <= 1))
 	{
 		AliasDescriptor alias;
+		alias.EscapeArgumentsBuffer = true;
 		kv.GetSectionName(alias.Command, sizeof(alias.Command));
 
 		bool isSimpleDefinition = (kv.GetDataType(NULL_STRING) == KvData_String);
