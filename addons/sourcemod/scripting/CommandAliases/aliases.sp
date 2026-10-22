@@ -88,7 +88,7 @@ bool GetAliasByName(const char[] name, AliasDescriptor alias)
 	return (AliasMap.GetArray(name, alias, sizeof(alias)));
 }
 
-bool InitAlias(AliasDescriptor alias)
+void InitAlias(AliasDescriptor alias)
 {
 	alias.Arguments = ParseAliasArgumentsSorted(alias.Destination);
 	GenerateUsageBuffer(alias);
