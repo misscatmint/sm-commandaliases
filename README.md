@@ -60,8 +60,8 @@ Defining properties can be done in two ways:
 |--------|----|-----------|
 | **destination** | string | Destination (template) for the alias.
 | admin_flagstring | string | Admin flags required to execute the alias.
-| explicit_server_execute | bool | Explicitly (always) execute the alias as the server.
-| escape_arguments_buffer | bool | Escape `{{args}}` template variable, **do not change this unless you know what you're doing**!
+| explicit_server_execute | bool | Explicitly (always) execute the alias as the server. Arguments with unpaired quotes, quotes inside an argument or line breaks are refused.
+| escape_arguments_buffer | bool | Escape `{{args}}` template variable, **do not change this unless you know what you're doing**! Cannot be disabled together with `explicit_server_execute`.
 
 ---
 
@@ -163,3 +163,4 @@ All requirements can be found at all times [here](CommandAliases/validation.sp).
 - An alias command cannot contain whitespace.
 - An alias command's destination cannot be empty.
 - An alias command cannot be an already existing alias command.
+- An alias command cannot disable `escape_arguments_buffer` while using `explicit_server_execute`.

@@ -26,18 +26,14 @@ public Action Command_PositionalListener(int client, int args)
 		return Plugin_Handled;
 	}
 
-	ExpandAllVariables(alias.Destination, sizeof(alias.Destination), alias.EscapeArgumentsBuffer);
-
-	for (int i = 0; i < alias.Arguments.Length; i++)
+	if (alias.ExplicitServerExecute && !IsInputSafeForServer(args))
 	{
-		AliasArgumentDescriptor arg;
-		alias.Arguments.GetArray(i, arg);
-
-		char argValue[64];
-		GetCommandArgumentSafe(arg.Index, argValue, sizeof(argValue));
-
-		ReplaceStringEx(alias.Destination, sizeof(alias.Destination), arg.FullMatch, argValue);
+		ReplyToCommand(client, "Arguments cannot contain stray quotes or line breaks.");
+		return Plugin_Handled;
 	}
+
+	ExpandArguments(alias);
+	ExpandAllVariables(alias.Destination, sizeof(alias.Destination), alias.EscapeArgumentsBuffer);
 
 	if (alias.ExplicitServerExecute)
 	{
@@ -52,6 +48,86 @@ public Action Command_PositionalListener(int client, int args)
 }
 
 // ===== [ PRIVATE ] =====
+
+// Server-run destinations must not let input change where the command buffer splits commands.
+static bool IsInputSafeForServer(int argCount)
+{
+	char argString[256];
+	GetCmdArgString(argString, sizeof(argString));
+
+	if (StrContains(argString, "\n") != -1 || StrContains(argString, "\r") != -1)
+	{
+		return false;
+	}
+
+	int quotes = 0;
+	for (int i = 0; argString[i] != '\0'; i++)
+	{
+		if (argString[i] == '"')
+		{
+			quotes++;
+		}
+	}
+
+	if (quotes % 2 != 0)
+	{
+		return false;
+	}
+
+	for (int i = 1; i <= argCount; i++)
+	{
+		char arg[256];
+		GetCmdArg(i, arg, sizeof(arg));
+
+		if (StrContains(arg, "\"") != -1)
+		{
+			return false;
+		}
+	}
+
+	return true;
+}
+
+// One pass, so an inserted value is never scanned for placeholders again.
+static void ExpandArguments(AliasDescriptor alias)
+{
+	char source[sizeof(AliasDescriptor::Destination)];
+	strcopy(source, sizeof(source), alias.Destination);
+	alias.Destination[0] = '\0';
+
+	int i = 0;
+	while (source[i] != '\0')
+	{
+		bool replaced = false;
+
+		for (int j = 0; j < alias.Arguments.Length; j++)
+		{
+			AliasArgumentDescriptor arg;
+			alias.Arguments.GetArray(j, arg);
+
+			int matchLength = strlen(arg.FullMatch);
+			if (strncmp(source[i], arg.FullMatch, matchLength) == 0)
+			{
+				char argValue[64];
+				GetCommandArgumentSafe(arg.Index, argValue, sizeof(argValue));
+
+				StrCat(alias.Destination, sizeof(alias.Destination), argValue);
+				i += matchLength;
+				replaced = true;
+				break;
+			}
+		}
+
+		if (!replaced)
+		{
+			char character[2];
+			character[0] = source[i];
+
+			StrCat(alias.Destination, sizeof(alias.Destination), character);
+			i++;
+		}
+	}
+}
 
 static bool HasArguments(ArrayList args, int userArgCount)
 {

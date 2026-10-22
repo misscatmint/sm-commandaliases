@@ -5,6 +5,7 @@ enum AliasValidationError
 	ValidationError_AliasWhitespace,
 	ValidationError_DestinationEmpty,
 	ValidationError_AliasDuplicateKey,
+	ValidationError_UnescapedServerExecute,
 	ValidationError_COUNT
 };
 
@@ -14,7 +15,8 @@ static char ValidationPhrases[ValidationError_COUNT][] =
 	"Alias cannot be empty",
 	"Alias cannot contain whitespace",
 	"Alias destination cannot be empty",
-	"Alias cannot be an existing alias"
+	"Alias cannot be an existing alias",
+	"Alias cannot disable argument escaping with explicit server execute"
 };
 
 AliasValidationError ValidateAlias(AliasDescriptor alias)
@@ -40,6 +42,11 @@ AliasValidationError ValidateAlias(AliasDescriptor alias)
 	if (AliasExists(alias.Command))
 	{
 		return ValidationError_AliasDuplicateKey;
+	}
+
+	if (alias.ExplicitServerExecute && !alias.EscapeArgumentsBuffer)
+	{
+		return ValidationError_UnescapedServerExecute;
 	}
 
 	return ValidationError_None;
