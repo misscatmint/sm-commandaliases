@@ -33,9 +33,13 @@ public void OnPluginStart()
 	InitAliases();
 	RegisterCommands();
 
-	LoadAliasesFromKeyValues();
-
 	LoadTranslations("core.phrases");
+}
+
+public void OnAllPluginsLoaded()
+{
+	// After other plugins have registered their commands, so aliases can't take them over.
+	LoadAliasesFromKeyValues();
 }
 
 bool LoadAliasesFromKeyValues(int invoker = -1)

@@ -169,4 +169,5 @@ All requirements can be found at all times [here](addons/sourcemod/scripting/Com
 - An alias command cannot contain whitespace.
 - An alias command's destination cannot be empty.
 - An alias command cannot be an already existing alias command. Alias commands are not case-sensitive.
+- An alias command cannot reuse an existing command. To change who can use an existing command, override it in `admin_overrides.cfg` instead.
 - An alias command cannot disable `escape_arguments_buffer` while using `explicit_server_execute`.

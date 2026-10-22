@@ -1,4 +1,5 @@
 static StringMap AliasMap = null;
+static StringMap MyHooks = null;
 
 enum struct AliasDescriptor
 {
@@ -29,6 +30,7 @@ enum struct AliasArgumentDescriptor
 void InitAliases()
 {
 	AliasMap = new StringMap();
+	MyHooks = new StringMap();
 }
 
 void ClearAliases()
@@ -83,6 +85,12 @@ bool AliasExists(const char[] aliasName)
 	return (AliasMap.GetArray(aliasName, unused, 1));
 }
 
+bool IsForeignCommand(const char[] command)
+{
+	any unused;
+	return CommandExists(command) && !MyHooks.GetValue(command, unused);
+}
+
 bool GetAliasByName(const char[] name, AliasDescriptor alias)
 {
 	return (AliasMap.GetArray(name, alias, sizeof(alias)));
@@ -113,46 +121,18 @@ void InitAlias(AliasDescriptor alias)
 
 void RegisterAlias(AliasDescriptor alias)
 {
-	if (ShouldHookCommand(alias.Command))
+	// SourceMod can't unregister commands, so an alias keeps its command across reloads.
+	any unused;
+	if (!MyHooks.GetValue(alias.Command, unused))
 	{
 		RegisterAliasPositionalListener(alias);
+		MyHooks.SetValue(alias.Command, 0);
 	}
 
 	AliasMap.SetArray(alias.Command, alias, sizeof(alias));
 }
 
 // ===== [ PRIVATE ] =====
-
-static bool ShouldHookCommand(const char[] command)
-{
-	static StringMap MyHooks;
-	if (MyHooks == null)
-	{
-		MyHooks = new StringMap();
-	}
-
-	bool shouldHook = false;
-
-	if (!CommandExists(command))
-	{
-		shouldHook = true;
-	}
-	else
-	{
-		any unused;
-		if (!MyHooks.GetValue(command, unused))
-		{
-			shouldHook = true;
-		}
-	}
-
-	if (shouldHook)
-	{
-		MyHooks.SetValue(command, 0);
-	}
-
-	return shouldHook;
-}
 
 static void GenerateUsageBuffer(AliasDescriptor alias)
 {
