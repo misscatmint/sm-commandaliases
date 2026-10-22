@@ -7,6 +7,7 @@ enum AliasValidationError
 	ValidationError_AliasDuplicateKey,
 	ValidationError_UnescapedServerExecute,
 	ValidationError_ExistingCommand,
+	ValidationError_CallsItself,
 	ValidationError_COUNT
 };
 
@@ -18,7 +19,8 @@ static char ValidationPhrases[ValidationError_COUNT][] =
 	"Alias destination cannot be empty",
 	"Alias cannot be an existing alias",
 	"Alias cannot disable argument escaping with explicit server execute",
-	"Alias cannot reuse an existing command"
+	"Alias cannot reuse an existing command",
+	"Alias destination cannot run the alias itself"
 };
 
 AliasValidationError ValidateAlias(AliasDescriptor alias)
@@ -60,7 +62,34 @@ AliasValidationError ValidateAlias(AliasDescriptor alias)
 		return ValidationError_UnescapedServerExecute;
 	}
 
+	if (DestinationCallsAlias(alias))
+	{
+		return ValidationError_CallsItself;
+	}
+
 	return ValidationError_None;
+}
+
+// A destination that runs its own alias would queue itself again every frame.
+static bool DestinationCallsAlias(AliasDescriptor alias)
+{
+	char commands[16][sizeof(AliasDescriptor::Destination)];
+	int count = ExplodeString(alias.Destination, ";", commands, sizeof(commands), sizeof(commands[]));
+
+	for (int i = 0; i < count; i++)
+	{
+		TrimString(commands[i]);
+
+		char firstWord[sizeof(AliasDescriptor::Command)];
+		BreakString(commands[i], firstWord, sizeof(firstWord));
+
+		if (StrEqual(firstWord, alias.Command, false))
+		{
+			return true;
+		}
+	}
+
+	return false;
 }
 
 bool AssertAliasValid(AliasDescriptor alias, int invoker = -1)
