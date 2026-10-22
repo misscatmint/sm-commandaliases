@@ -49,6 +49,8 @@ bool LoadAliasesFromKeyValues(int invoker = -1)
 		return false;
 	}
 
+	ClearAliases();
+
 	for (int i = 0; i < aliases.Length; i++)
 	{
 		AliasDescriptor alias;

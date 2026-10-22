@@ -39,10 +39,13 @@ public Action Command_ListAliases(int client, int args)
 
 public Action Command_ReloadAliases(int client, int args)
 {
-	ClearAliases();
 	if (LoadAliasesFromKeyValues(client))
 	{
 		ReplyToCommand(client, "Reloaded command aliases!");
+	}
+	else
+	{
+		ReplyToCommand(client, "Failed reloading command aliases, kept the current ones.");
 	}
 
 	return Plugin_Handled;
