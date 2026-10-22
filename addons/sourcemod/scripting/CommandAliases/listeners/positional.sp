@@ -156,11 +156,6 @@ static bool HasArguments(ArrayList args, int userArgCount)
 		return true;
 	}
 
-	/*
-		TODO: Does it make sense to go from:
-		- Lowest to highest index
-		- Highest to lowest index
-	*/
 	for (int i = (args.Length - 1); i >= 0; i--)
 	{
 		AliasArgumentDescriptor arg;

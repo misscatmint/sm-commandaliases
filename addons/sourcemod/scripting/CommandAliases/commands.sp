@@ -24,11 +24,13 @@ public Action Command_ListAliases(int client, int args)
 		ReplyToCommand(client, "\n%s\n\
 								[Destination                 ] => %s\n\
 								[Explicit Server Execute     ] => %d\n\
+								[Escape Arguments Buffer     ] => %d\n\
 								[Real Admin Flags            ] => %s\n\
 								[Effective Admin Flags       ] => %s",
 								alias.Command,
 								alias.Destination,
 								alias.ExplicitServerExecute,
+								alias.EscapeArgumentsBuffer,
 								GetFlagString(alias.AdminFlags),
 								GetFlagString(effectiveAdminFlags));
 	}

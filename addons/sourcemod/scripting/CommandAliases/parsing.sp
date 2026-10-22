@@ -1,7 +1,7 @@
 ArrayList ParseAliasesFromKeyValuesFile(const char filePath[PLATFORM_MAX_PATH])
 {
 	KeyValues kv = new KeyValues("CommandAliases");
-	if (kv == null || !kv.ImportFromFile(filePath))
+	if (!kv.ImportFromFile(filePath))
 	{
 		delete kv;
 		return null;
