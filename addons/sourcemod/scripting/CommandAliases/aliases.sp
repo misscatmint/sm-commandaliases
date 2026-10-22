@@ -22,7 +22,7 @@ enum struct AliasArgumentDescriptor
 	bool Required;
 
 	int ParseOrder;
-	char FullMatch[64];
+	char FullMatch[sizeof(AliasDescriptor::Destination)];
 }
 
 // ===== [ PUBLIC ] =====
