@@ -13,12 +13,16 @@
 
 #include "CommandAliases/listeners/positional.sp"
 
+#if !defined PLUGIN_VERSION
+#define PLUGIN_VERSION "dev"
+#endif
+
 public Plugin myinfo =
 {
 	name = "CommandAliases",
-	author = "Sikari",
+	author = "Sikari, catmint",
 	description = "",
-	version = "2.0.0",
+	version = PLUGIN_VERSION,
 	url = "https://bitbucket.org/Sikarii/sm-commandaliases"
 };
 
