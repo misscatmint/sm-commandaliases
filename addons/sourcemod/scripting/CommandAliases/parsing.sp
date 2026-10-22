@@ -44,7 +44,7 @@ ArrayList ParseAliasArguments(const char[] destination)
 	static Regex argRegex;
 	if (argRegex == null)
 	{
-		argRegex = new Regex("[\\[\\<]([1-9])(?:\\:([a-zA-Z]+))?[\\]\\>]");
+		argRegex = new Regex("[\\[\\<]([1-9])(?:\\:(\\w+))?[\\]\\>]");
 	}
 
 	ArrayList arguments = new ArrayList(sizeof(AliasArgumentDescriptor));

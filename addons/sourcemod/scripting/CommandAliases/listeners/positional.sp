@@ -33,8 +33,12 @@ public Action Command_PositionalListener(int client, int args)
 		return Plugin_Handled;
 	}
 
-	ExpandArguments(alias);
-	ExpandAllVariables(alias.Destination, sizeof(alias.Destination), alias.EscapeArgumentsBuffer);
+	if (!ExpandArguments(alias, args)
+		|| !ExpandAllVariables(alias.Destination, sizeof(alias.Destination), alias.EscapeArgumentsBuffer))
+	{
+		ReplyToCommand(client, "Arguments are too long for this alias.");
+		return Plugin_Handled;
+	}
 
 	if (alias.ExplicitServerExecute)
 	{
@@ -90,7 +94,7 @@ static bool IsInputSafeForServer(int argCount)
 }
 
 // One pass, so an inserted value is never scanned for placeholders again.
-static void ExpandArguments(AliasDescriptor alias)
+static bool ExpandArguments(AliasDescriptor alias, int argCount)
 {
 	char source[sizeof(AliasDescriptor::Destination)];
 	strcopy(source, sizeof(source), alias.Destination);
@@ -99,7 +103,11 @@ static void ExpandArguments(AliasDescriptor alias)
 	int i = 0;
 	while (source[i] != '\0')
 	{
-		bool replaced = false;
+		// Room for an argument that fills the destination plus its quotes, so overflow is detectable.
+		char insert[sizeof(AliasDescriptor::Destination) + 2];
+		insert[0] = source[i];
+		insert[1] = '\0';
+		int consumed = 1;
 
 		for (int j = 0; j < alias.Arguments.Length; j++)
 		{
@@ -109,25 +117,27 @@ static void ExpandArguments(AliasDescriptor alias)
 			int matchLength = strlen(arg.FullMatch);
 			if (strncmp(source[i], arg.FullMatch, matchLength) == 0)
 			{
-				char argValue[64];
-				GetCommandArgumentSafe(arg.Index, argValue, sizeof(argValue));
+				insert[0] = '\0';
+				if (arg.Index <= argCount)
+				{
+					GetCommandArgumentSafe(arg.Index, insert, sizeof(insert));
+				}
 
-				StrCat(alias.Destination, sizeof(alias.Destination), argValue);
-				i += matchLength;
-				replaced = true;
+				consumed = matchLength;
 				break;
 			}
 		}
 
-		if (!replaced)
+		if (strlen(alias.Destination) + strlen(insert) >= sizeof(alias.Destination))
 		{
-			char character[2];
-			character[0] = source[i];
-
-			StrCat(alias.Destination, sizeof(alias.Destination), character);
-			i++;
+			return false;
 		}
+
+		StrCat(alias.Destination, sizeof(alias.Destination), insert);
+		i += consumed;
 	}
+
+	return true;
 }
 
 static bool HasArguments(ArrayList args, int userArgCount)
