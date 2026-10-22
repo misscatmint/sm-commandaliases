@@ -21,7 +21,7 @@ Note: `{gamedir}` is your game's directory, this could be "csgo" or "tf2" or any
 
 ## Commands
 - `sm_commandaliases_list` - Lists all command aliases along with their properties.
-- `sm_commandaliases_reload` - Reloads all command aliases from the file. If the file can't be loaded, the current aliases are kept.
+- `sm_commandaliases_reload` - Reloads all command aliases from the file. If the file can't be loaded, the current aliases are kept. Removed aliases do nothing, but stay registered as commands until the plugin is reloaded, since SourceMod can't unregister commands.
 
 ---
 
