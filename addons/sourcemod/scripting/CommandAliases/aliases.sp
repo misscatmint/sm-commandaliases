@@ -88,6 +88,23 @@ bool GetAliasByName(const char[] name, AliasDescriptor alias)
 	return (AliasMap.GetArray(name, alias, sizeof(alias)));
 }
 
+// Same priority SourceMod uses for admin commands, with the alias flags as the default.
+int GetAliasEffectiveFlags(AliasDescriptor alias)
+{
+	int eFlags;
+	if (GetCommandOverride(alias.Command, Override_Command, eFlags))
+	{
+		return eFlags;
+	}
+
+	if (GetCommandOverride("CommandAliases", Override_CommandGroup, eFlags))
+	{
+		return eFlags;
+	}
+
+	return alias.AdminFlags;
+}
+
 void InitAlias(AliasDescriptor alias)
 {
 	alias.Arguments = ParseAliasArgumentsSorted(alias.Destination);

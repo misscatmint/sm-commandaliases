@@ -1,6 +1,7 @@
 void RegisterAliasPositionalListener(AliasDescriptor alias)
 {
-	RegAdminCmd(alias.Command, Command_PositionalListener, alias.AdminFlags, "Alias command", "CommandAliases");
+	// Registered flags can't change after registration, so the alias flags are checked in the callback.
+	RegAdminCmd(alias.Command, Command_PositionalListener, 0, "Alias command", "CommandAliases");
 }
 
 public Action Command_PositionalListener(int client, int args)
@@ -14,7 +15,7 @@ public Action Command_PositionalListener(int client, int args)
 		return Plugin_Continue;
 	}
 
-	if (!CheckCommandAccess(client, "CommandAliases_Bypass", alias.AdminFlags))
+	if (!CheckCommandAccess(client, alias.Command, GetAliasEffectiveFlags(alias), true))
 	{
 		ReplyToCommand(client, "[SM] %T", client, "No Access");
 		return Plugin_Handled;

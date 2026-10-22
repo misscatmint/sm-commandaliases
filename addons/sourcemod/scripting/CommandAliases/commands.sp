@@ -19,7 +19,7 @@ public Action Command_ListAliases(int client, int args)
 		AliasDescriptor alias;
 		aliases.GetArray(i, alias);
 
-		int effectiveAdminFlags = GetEffectiveFlags(alias);
+		int effectiveAdminFlags = GetAliasEffectiveFlags(alias);
 
 		ReplyToCommand(client, "\n%s\n\
 								[Destination                 ] => %s\n\
@@ -46,23 +46,6 @@ public Action Command_ReloadAliases(int client, int args)
 	}
 
 	return Plugin_Handled;
-}
-
-static int GetEffectiveFlags(AliasDescriptor alias)
-{
-	// Command override always has priority
-	int eFlags;
-	if (GetCommandOverride(alias.Command, Override_Command, eFlags))
-	{
-		return eFlags;
-	}
-
-	if (GetCommandOverride("CommandAliases", Override_CommandGroup, eFlags))
-	{
-		return eFlags;
-	}
-
-	return alias.AdminFlags;
 }
 
 static char[] GetFlagString(int adminFlagsBits)
