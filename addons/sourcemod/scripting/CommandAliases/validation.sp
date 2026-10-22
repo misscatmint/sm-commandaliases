@@ -24,6 +24,9 @@ AliasValidationError ValidateAlias(AliasDescriptor alias)
 	TrimString(alias.Command);
 	TrimString(alias.Destination);
 
+	// The listener looks aliases up by the lowercased command name.
+	StringToLower(alias.Command);
+
 	if (alias.Command[0] == '\0')
 	{
 		return ValidationError_AliasEmpty;
