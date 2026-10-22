@@ -166,7 +166,7 @@ Allow and deny rules in admin groups only work per command, since SourceMod matc
 All requirements can be found at all times [here](addons/sourcemod/scripting/CommandAliases/validation.sp).
 
 - An alias command cannot be empty.
-- An alias command cannot contain whitespace.
+- An alias command can only contain letters, digits and underscores.
 - An alias command's destination cannot be empty.
 - An alias command cannot be an already existing alias command. Alias commands are not case-sensitive.
 - An alias command cannot reuse an existing command. To change who can use an existing command, override it in `admin_overrides.cfg` instead.

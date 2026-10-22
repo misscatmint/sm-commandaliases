@@ -2,7 +2,7 @@ enum AliasValidationError
 {
 	ValidationError_None = 0,
 	ValidationError_AliasEmpty,
-	ValidationError_AliasWhitespace,
+	ValidationError_AliasInvalidCharacters,
 	ValidationError_DestinationEmpty,
 	ValidationError_AliasDuplicateKey,
 	ValidationError_UnescapedServerExecute,
@@ -15,7 +15,7 @@ static char ValidationPhrases[ValidationError_COUNT][] =
 {
 	"None",
 	"Alias cannot be empty",
-	"Alias cannot contain whitespace",
+	"Alias can only contain letters, digits and underscores",
 	"Alias destination cannot be empty",
 	"Alias cannot be an existing alias",
 	"Alias cannot disable argument escaping with explicit server execute",
@@ -36,9 +36,12 @@ AliasValidationError ValidateAlias(AliasDescriptor alias)
 		return ValidationError_AliasEmpty;
 	}
 
-	if (StrContains(alias.Command, " ") != -1)
+	for (int i = 0; alias.Command[i] != '\0'; i++)
 	{
-		return ValidationError_AliasWhitespace;
+		if (!IsCharAlpha(alias.Command[i]) && !IsCharNumeric(alias.Command[i]) && alias.Command[i] != '_')
+		{
+			return ValidationError_AliasInvalidCharacters;
+		}
 	}
 
 	if (alias.Destination[0] == '\0')
