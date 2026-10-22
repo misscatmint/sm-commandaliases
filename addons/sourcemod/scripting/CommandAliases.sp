@@ -23,7 +23,7 @@ public Plugin myinfo =
 	author = "Sikari, catmint",
 	description = "",
 	version = PLUGIN_VERSION,
-	url = "https://bitbucket.org/Sikarii/sm-commandaliases"
+	url = "https://github.com/misscatmint/sm-commandaliases/"
 };
 
 // ===== [ PUBLIC ] =====

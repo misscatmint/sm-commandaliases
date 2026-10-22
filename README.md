@@ -9,9 +9,9 @@ Let it be of annoyance, ease-of-access or delegation of access, this plugin aims
 ---
 
 ## Installation
-1. Download the [latest release](https://bitbucket.org/Sikarii/sm-commandaliases/downloads/CommandAliases-latest.smx) from the [downloads](https://bitbucket.org/Sikarii/sm-commandaliases/downloads/).
-2. Place the downloaded `smx` file into `{gamedir}/addons/sourcemod/plugins/`.
-3. [Configure](#markdown-header-configuration) `{gamedir}/cfg/sourcemod/CommandAliases.cfg` with the aliases you wish to have.
+1. Download the zip of the [latest release](https://github.com/misscatmint/sm-commandaliases/releases/latest).
+2. Copy `addons/sourcemod/plugins/CommandAliases.smx` from the zip into `{gamedir}/addons/sourcemod/plugins/`.
+3. [Configure](#configuration) `{gamedir}/cfg/sourcemod/CommandAliases.cfg` with the aliases you wish to have.
 4. You're done, use `sm_commandaliases_list` to verify the aliases you've setup.
 
 Note: `{gamedir}` is your game's directory, this could be "csgo" or "tf2" or anything else, depending on your game.
@@ -21,7 +21,7 @@ Note: `{gamedir}` is your game's directory, this could be "csgo" or "tf2" or any
 
 ## Commands
 - `sm_commandaliases_list` - Lists all command aliases along with their properties.
-- `sm_commandaliases_reload` - Reloads all command aliases from the file if it was successfully loaded.
+- `sm_commandaliases_reload` - Reloads all command aliases from the file. If the file can't be loaded, the current aliases are kept.
 
 ---
 
@@ -36,7 +36,7 @@ Defining properties can be done in two ways:
 {
     "sm_a"  "sm_admin" // Simple definition, only supports "destination"
     
-    "sm_a"  // Detailed definition, supports all of the properties below
+    "sm_b"  // Detailed definition, supports all of the properties below
     {
         "destination"       "sm_admin"
         "admin_flagstring"  "b"
@@ -54,7 +54,7 @@ Defining properties can be done in two ways:
 
 #### Available properties
 -- **Bolded** properties are **required**.  
--- Parsed properties can also be found [here](CommandAliases/parsing.sp).  
+-- Parsed properties can also be found [here](addons/sourcemod/scripting/CommandAliases/parsing.sp).  
 
 |Property|Type|Description|
 |--------|----|-----------|
@@ -73,6 +73,9 @@ Having the following as the destination: `sm_ban <1:target> 0 [2:reason]` would 
 - Second argument would be marked as **optional** and would have the label "reason".
 - An usage message if the first argument is not provided: `Usage: sm_alias <target> [reason]`.
     - This will trigger when the first argument (that is marked as **required**) is not provided by the user.
+- If the second argument is not provided, it is left out of the command.
+
+Labels can contain letters, digits and underscores. An alias refuses to run when its expanded command would be longer than 255 characters.
 
 #### In addition to the above, some additional templating can also be applied:
 - `sm_help {{args}}` would expand to `sm_help` and all the arguments the user provided.
@@ -92,7 +95,8 @@ All commands created by this plugin will be put under the **CommandAliases** gro
 All aliases can also be given the `admin_flagstring` property to restrict access to them.
 
 You can setup overrides either separately `sm_a` or the entire group `@CommandAliases`.  
-Keep in mind that any type of override takes priority over the admin flags set on the alias.
+Keep in mind that any type of override takes priority over the admin flags set on the alias.  
+Changes to `admin_flagstring` apply after `sm_commandaliases_reload`.
 
 If you wanna get more in-depth with overrides, see [the SourceMod wiki](https://wiki.alliedmods.net/Overriding_Command_Access_(SourceMod)).
 
@@ -147,20 +151,22 @@ Groups
 	{
 		Overrides
 		{
-			"@CommandAliases"	"allow" // Anyone in the "Alias Users" group will get access to all aliases.
-			"sm_a"              "deny"  // Anyone in the "Alias Users" group is NOT allowed to use "sm_a".
+			"sm_w"	"allow" // Anyone in the "Alias Users" group will get access to "sm_w".
+			"sm_b"	"deny"  // Anyone in the "Alias Users" group is NOT allowed to use "sm_b".
 		}
 	}
 }
 ```
 
+Allow and deny rules in admin groups only work per command, since SourceMod matches `@` group rules there against the command name. They also don't apply to aliases that need no admin flags.
+
 ---
 
 ## Requirements for an alias
-All requirements can be found at all times [here](CommandAliases/validation.sp).
+All requirements can be found at all times [here](addons/sourcemod/scripting/CommandAliases/validation.sp).
 
 - An alias command cannot be empty.
 - An alias command cannot contain whitespace.
 - An alias command's destination cannot be empty.
-- An alias command cannot be an already existing alias command.
+- An alias command cannot be an already existing alias command. Alias commands are not case-sensitive.
 - An alias command cannot disable `escape_arguments_buffer` while using `explicit_server_execute`.
